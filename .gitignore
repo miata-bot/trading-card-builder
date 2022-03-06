@@ -1,0 +1,10 @@
+zig-cache
+zig-out
+*.o
+*.a
+*.db*
+luac
+lua
+.elixir_ls
+kcov-output
+output.png

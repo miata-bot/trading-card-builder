@@ -142,6 +142,7 @@ fn render(state: *const Engine, card: *Card) !void {
 }
 
 pub fn main() anyerror!u8 {
+    // _ = qr.qrmain();
     const allocator = std.heap.page_allocator;
 
     const state = initEngine(allocator, "./database.db") catch return 1;
@@ -160,6 +161,5 @@ pub fn main() anyerror!u8 {
 
     render(&state, &card) catch return 1;
     std.log.info("rendered {s}", .{"output.png"});
-
     return 0;
 }

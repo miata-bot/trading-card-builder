@@ -10,9 +10,15 @@ pub fn build(b: *std.build.Builder) void {
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
+
+    const c_flags = [_][]const u8{
+        "-std=c99",
+        "-O2",
+    };
+
     const sqlite = b.addStaticLibrary("sqlite", null);
     sqlite.addIncludeDir("sqlite");
-    sqlite.addCSourceFile("sqlite/sqlite3.c", &[_][]const u8{"-std=c99"});
+    sqlite.addCSourceFile("sqlite/sqlite3.c", &c_flags);
     sqlite.linkLibC();
 
     const lua = b.addStaticLibrary("lua", null);
@@ -55,14 +61,14 @@ pub fn build(b: *std.build.Builder) void {
         "lzio.c",
     };
 
-    const c_flags = [_][]const u8{
-        "-std=c99",
-        "-O2",
-    };
-
     inline for (lua_c_files) |c_file| {
         lua.addCSourceFile("lua/src/" ++ c_file, &c_flags);
     }
+
+    const qr_code_generator = b.addStaticLibrary("qr_code_generator", null);
+    qr_code_generator.addIncludeDir("QR-Code-generator.git/c/");
+    qr_code_generator.addCSourceFile("QR-Code-generator.git/c/qrcodegen.c",  &c_flags);
+    qr_code_generator.addCSourceFile("QR-Code-generator.git/c/qrcodegen-demo.c",  &c_flags);
 
     const exe = b.addExecutable("engine", "src/main.zig");
     exe.setTarget(target);
@@ -79,6 +85,8 @@ pub fn build(b: *std.build.Builder) void {
     exe.linkSystemLibrary("MagickWand-7.Q16HDRI");
     exe.linkSystemLibrary("MagickCore-7.Q16HDRI");
 
+    exe.linkLibrary(qr_code_generator);
+    exe.addIncludeDir("QR-Code-generator.git/c/");
     exe.install();
 
     const run_cmd = exe.run();

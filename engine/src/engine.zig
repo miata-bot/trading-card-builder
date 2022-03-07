@@ -12,6 +12,7 @@ const lua = @import("lua.zig").lua;
 const util = @import("util.zig");
 const sqlite = @import("sqlite.zig").sqlite;
 const magick_wand = @import("magick_wand.zig").magick_wand;
+const qr = @import("qr.zig");
 const base16 = @import("base16.zig").standard_base16;
 
 pub const DatabaseError = error{ Open, Prepare, Bind, Query, HashCheck };
@@ -225,6 +226,12 @@ pub const Engine = struct {
         // overlay icon
         const icon = try util.getImage(self, CardSchema.Icon);
         defer icon.deinit();
+
+        var qrwand = qr.generate(card.id.ptr);
+        defer _ = magick_wand.DestroyMagickWand(qrwand);
+        _ = magick_wand.MagickCompositeImage(wand, qrwand, magick_wand.OverCompositeOp, magick_wand.MagickTrue, 100, 540);
+
+        // _ = magick_wand.MagickWriteImages(qrwand, "qr.png", magick_wand.MagickTrue);
 
         _ = magick_wand.MagickCompositeImage(wand, icon.wand, magick_wand.OverCompositeOp, magick_wand.MagickTrue, 40, 540);
 
